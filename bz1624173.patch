@@ -1,0 +1,11 @@
+--- a/squashfs-tools/Makefile	2019-07-24 13:52:09.552920269 -0400
++++ b/squashfs-tools/Makefile	2019-07-24 23:52:47.839665687 -0400
+@@ -107,6 +107,8 @@ XATTR_DEFAULT = 1
+ #        End of BUILD options section         #
+ ###############################################
+ 
++EXTRA_LDFLAGS += -z now -pie
++
+ INCLUDEDIR = -I.
+ INSTALL_DIR = /usr/local/bin
+ 

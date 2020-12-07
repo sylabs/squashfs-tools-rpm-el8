@@ -1,0 +1,21 @@
+--- a/squashfs-tools/mksquashfs.c	2019-08-06 11:03:34.071402614 -0400
++++ b/squashfs-tools/mksquashfs.c	2019-08-06 11:09:54.063340318 -0400
+@@ -267,6 +267,7 @@ pthread_mutex_t	pos_mutex = PTHREAD_MUTE
+ pthread_mutex_t	dup_mutex = PTHREAD_MUTEX_INITIALIZER;
+ 
+ /* user options that control parallelisation */
++#define MAX_CPUS 256
+ int processors = -1;
+ int bwriter_size;
+ 
+@@ -4124,6 +4125,10 @@ void initialise_threads(int readq, int f
+ #endif
+ 	}
+ 
++	/* Limit the number of processors we're going to use */
++	if(processors > MAX_CPUS)
++		processors = MAX_CPUS;
++
+ 	if(multiply_overflow(processors, 3) ||
+ 			multiply_overflow(processors * 3, sizeof(pthread_t)))
+ 		BAD_ERROR("Processors too large\n");

@@ -1,0 +1,22 @@
+diff -Nupr squashfs4.3.orig/squashfs-tools/mksquashfs.c squashfs4.3/squashfs-tools/mksquashfs.c
+--- squashfs4.3.orig/squashfs-tools/mksquashfs.c	2018-08-20 10:47:49.286289155 -0400
++++ squashfs4.3/squashfs-tools/mksquashfs.c	2018-08-20 10:49:28.348541210 -0400
+@@ -35,6 +35,7 @@
+ #include <stddef.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <sys/sysmacros.h>
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <dirent.h>
+diff -Nupr squashfs4.3.orig/squashfs-tools/unsquashfs.c squashfs4.3/squashfs-tools/unsquashfs.c
+--- squashfs4.3.orig/squashfs-tools/unsquashfs.c	2018-08-20 10:47:49.283289208 -0400
++++ squashfs4.3/squashfs-tools/unsquashfs.c	2018-08-20 10:58:44.238732579 -0400
+@@ -35,6 +35,7 @@
+ #include <sys/types.h>
+ #include <sys/time.h>
+ #include <sys/resource.h>
++#include <sys/sysmacros.h>
+ #include <limits.h>
+ #include <ctype.h>
+ 

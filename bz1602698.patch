@@ -1,0 +1,95 @@
+diff -Nupr a/squashfs-tools/action.c b/squashfs-tools/action.c
+--- a/squashfs-tools/action.c	2014-05-09 23:54:13.000000000 -0500
++++ b/squashfs-tools/action.c	2019-04-18 10:59:53.140496887 -0500
+@@ -1094,8 +1094,14 @@ static int parse_sym_mode_args(struct ac
+ 	for (i = 0; i < args; i++) {
+ 		struct mode_data *entry = parse_sym_mode_arg(argv[i]);
+ 
+-		if (entry == NULL)
++		if (entry == NULL) {
++			while (head) {
++				cur = head;
++				head = head->next;
++				free(cur);
++			}
+ 			return 0;
++		}
+ 
+ 		if (cur) {
+ 			cur->next = entry;
+diff -Nupr a/squashfs-tools/mksquashfs.c b/squashfs-tools/mksquashfs.c
+--- a/squashfs-tools/mksquashfs.c	2019-04-18 10:51:05.975460126 -0500
++++ b/squashfs-tools/mksquashfs.c	2019-04-18 11:04:16.860682497 -0500
+@@ -3537,11 +3537,11 @@ void dir_scan2(struct dir_info *dir, str
+ 			char *subpath = strdup(subpathname(dir_ent));
+ 			struct dir_info *sub_dir = scan1_opendir("", subpath,
+ 						dir->depth + 1);
++			free(subpath);
+ 			if(sub_dir == NULL) {
+ 				ERROR_START("Could not create pseudo directory "
+ 					"\"%s\"", pseudo_ent->pathname);
+ 				ERROR_EXIT(", skipping...\n");
+-				free(subpath);
+ 				pseudo_ino --;
+ 				continue;
+ 			}
+diff -Nupr a/squashfs-tools/read_fs.c b/squashfs-tools/read_fs.c
+--- a/squashfs-tools/read_fs.c	2014-05-09 23:54:13.000000000 -0500
++++ b/squashfs-tools/read_fs.c	2019-04-18 11:06:32.499233451 -0500
+@@ -974,7 +974,8 @@ long long read_filesystem(char *root_nam
+ 
+ error:
+ 	free(id_table);
+-	free(inode_table);
++	if (inode_table)
++		free(inode_table);
+ 	free(directory_table);
+ 	return 0;
+ }
+diff -Nupr a/squashfs-tools/unsquash-4.c b/squashfs-tools/unsquash-4.c
+--- a/squashfs-tools/unsquash-4.c	2019-04-18 10:51:05.972460124 -0500
++++ b/squashfs-tools/unsquash-4.c	2019-04-18 11:32:54.600160166 -0500
+@@ -50,9 +50,11 @@ int read_fragment_table_4(long long *dir
+ 			"fragment table index\n");
+ 
+ 	fragment_table = malloc(bytes);
+-	if(fragment_table == NULL)
++	if(fragment_table == NULL) {
++		free(fragment_table_index);
+ 		EXIT_UNSQUASH("read_fragment_table: failed to allocate "
+ 			"fragment table\n");
++	}
+ 
+ 	res = read_fs_bytes(fd, sBlk.s.fragment_table_start,
+ 		SQUASHFS_FRAGMENT_INDEX_BYTES(sBlk.s.fragments),
+@@ -60,7 +62,7 @@ int read_fragment_table_4(long long *dir
+ 	if(res == FALSE) {
+ 		ERROR("read_fragment_table: failed to read fragment table "
+ 			"index\n");
+-		return FALSE;
++		goto out;
+ 	}
+ 	SQUASHFS_INSWAP_FRAGMENT_INDEXES(fragment_table_index, indexes);
+ 
+@@ -75,7 +77,8 @@ int read_fragment_table_4(long long *dir
+ 		if(length == FALSE) {
+ 			ERROR("read_fragment_table: failed to read fragment "
+ 				"table index\n");
+-			return FALSE;
++			res = FALSE;
++			goto out;
+ 		}
+ 	}
+ 
+@@ -83,7 +86,10 @@ int read_fragment_table_4(long long *dir
+ 		SQUASHFS_INSWAP_FRAGMENT_ENTRY(&fragment_table[i]);
+ 
+ 	*directory_table_end = fragment_table_index[0];
+-	return TRUE;
++	res = TRUE;
++out:
++	free(fragment_table_index);
++	return res;
+ }
+ 
+ 
